@@ -33,6 +33,6 @@ class DatabaseManager:
         finally:
             session.close()
 
-    def get_db(self) -> Generator[Session, None, None]:
+    def get_db(self) -> Session:
         with self.get_session() as session:
-            yield session
+            return session
