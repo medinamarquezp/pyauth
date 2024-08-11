@@ -10,8 +10,7 @@ class UserModel(BaseModel):
     email = Column(String(120), unique=True, nullable=False)
     role = Column(Enum('admin', 'user'), default='user')
     status = Column(Enum('active', 'inactive'), default='active')
-    language = Column(Enum('en', 'es'), default='en')
-    last_login = Column(DateTime(timezone=True))
+    last_login = Column(DateTime(timezone=True), nullable=True)
 
     def __repr__(self):
         return f"<User(id={self.id}, name='{self.name}', email='{self.email}', status='{self.status}')>"
