@@ -24,4 +24,4 @@ class UserRepository(BaseRepository[UserModel]):
         }
 
     def find_by_email(self, email: str) -> Optional[UserModel]:
-        return self.session.query(UserModel).filter(UserModel.email == email).first()
+        return self.get_by_props({"email": email})

@@ -35,6 +35,9 @@ class BaseRepository(Generic[T], ABC):
     def get_by_id(self, id: str) -> Optional[T]:
         return self.session.get(self.model, id)
 
+    def get_by_props(self, props: Dict[str, Any]) -> Optional[T]:
+        return self.session.query(self.model).filter_by(**props).first()
+
     def create(self, data: Dict[str, Any]) -> T:
         entity = self.model(**data)
         self.session.add(entity)
