@@ -1,0 +1,77 @@
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Virtual environment files and folders
+venv/
+env/
+*.env
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Log files
+*.log
+
+# Local configuration files
+config.ini
+settings.local.py
+
+# Dependency folders
+node_modules/
+vendor/
+
+# Compiled files
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Package files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# IDE and text editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+
+# Database files
+*.sqlite3
+*.db
+
+# Output and temporary files
+out/
+tmp/
+temp/
+
+# Coverage and test files
+coverage/
+.coverage
+htmlcov/
+
+# Generated documentation files
+docs/_build/
+
+# Python dependency files
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Python build files
+build/
+dist/
+*.egg-info/
+
