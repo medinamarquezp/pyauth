@@ -14,3 +14,11 @@ class UserService:
         except Exception as e:
             logger.error(f"Error creating user: {e}")
             raise e
+
+    def get_by_email(self, email: str) -> UserModel:
+        try:
+            logger.info(f"Getting user by email: {email}")
+            return self.user_repository.find_by_email(email)
+        except Exception as e:
+            logger.error(f"Error getting user by email: {e}")
+            raise e
