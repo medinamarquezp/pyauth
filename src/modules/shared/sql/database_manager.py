@@ -22,7 +22,7 @@ class DatabaseManager:
             autocommit=False, autoflush=False, bind=self.engine)
 
     @contextmanager
-    def get_session(self) -> Generator[Session, None, None]:
+    def generate_session(self) -> Generator[Session, None, None]:
         session: Session = self.SessionLocal()
         try:
             yield session
@@ -33,6 +33,6 @@ class DatabaseManager:
         finally:
             session.close()
 
-    def get_db(self) -> Session:
-        with self.get_session() as session:
+    def get_session(self) -> Session:
+        with self.generate_session() as session:
             return session
