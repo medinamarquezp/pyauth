@@ -1,4 +1,6 @@
+import os
 import smtplib
+from bs4 import BeautifulSoup
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -16,9 +18,20 @@ class EmailService:
         msg['From'] = self.username
         msg['To'] = to
 
-        msg.attach(MIMEText(body, 'html'))
+        content = self.prepare_template(subject, body)
+        msg.attach(MIMEText(content, 'html'))
 
         with smtplib.SMTP(self.smtp_server, self.port) as server:
             server.starttls()
             server.login(self.username, self.password)
             server.sendmail(self.username, to, msg.as_string())
+
+    def prepare_template(self, subject, content):
+        template_path = os.path.join(os.path.dirname(
+            __file__), '../templates/emails/base.html')
+        with open(template_path, 'r', encoding='utf-8') as file:
+            template = file.read()
+        template = template.replace(
+            '{{subject}}', subject).replace('{{content}}', content)
+        soup = BeautifulSoup(template, 'html.parser')
+        return soup.prettify()

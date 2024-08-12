@@ -1,0 +1,8 @@
+{
+  "emails": {
+    "signup": {
+      "subject": "Verificación de registro",
+      "content": "Por favor verifica tu email haciendo clic en el siguiente enlace: {{verification_link}}"
+    }
+  }
+}
