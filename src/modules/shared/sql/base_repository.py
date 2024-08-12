@@ -63,8 +63,8 @@ class BaseRepository(Generic[T], ABC):
         self.session.execute(delete(self.model))
         self.session.commit()
 
-    def delete_by_properties(self, **kwargs) -> None:
-        query = delete(self.model).filter_by(**kwargs)
+    def delete_by_properties(self, props: Dict[str, Any]) -> None:
+        query = delete(self.model).filter_by(**props)
         self.session.execute(query)
         self.session.commit()
 

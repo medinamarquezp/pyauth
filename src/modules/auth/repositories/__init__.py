@@ -1,1 +1,2 @@
 from .password_repository import PasswordRepository
+from .verification_token_repository import VerificationTokenRepository

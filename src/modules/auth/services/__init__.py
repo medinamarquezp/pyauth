@@ -1,4 +1,3 @@
 from .auth_service import AuthService
 from .password_service import PasswordService
-
-__all__ = ['PasswordService', 'AuthService']
+from .verification_token_service import VerificationTokenService
