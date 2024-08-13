@@ -8,3 +8,12 @@ signup_schema = {
     },
     "required": ["email", "password"],
 }
+
+signin_schema = {
+    "type": "object",
+    "properties": {
+        "email": {"type": "string", "format": "email"},
+        "password": {"type": "string"},
+    },
+    "required": ["email", "password"],
+}
