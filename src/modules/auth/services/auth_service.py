@@ -46,15 +46,15 @@ class AuthService:
             self.send_signup_email(user, session)
             logger.info(f"Signup email sent to: {user.email}")
             session.commit()
-            return user
+            return True
         except jsonschema.ValidationError as err:
             logger.error(f"Error validating signup data: {err}")
             session.rollback()
-            raise err
+            return False
         except Exception as err:
             logger.error(f"Error signing up: {err}")
             session.rollback()
-            raise err
+            return False
         finally:
             session.close()
 
