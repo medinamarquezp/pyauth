@@ -52,7 +52,7 @@ class BaseRepository(Generic[T], ABC):
         return self.session.get(self.model, id)
 
     def get_by_props(self, props: Dict[str, Any]) -> Optional[T]:
-        return self.session.query(self.model).filter_by(**props).first()
+        return self.session.query(self.model).filter_by(**props).order_by(self.model.__table__.c.created_at.desc()).first()
 
     def create(self, data: Dict[str, Any]) -> T:
         entity = self.model(**data)
