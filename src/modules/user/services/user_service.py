@@ -1,4 +1,5 @@
 from typing import Optional
+from datetime import datetime
 from sqlalchemy.orm import Session
 
 from src.modules.user.models import UserModel
@@ -32,3 +33,13 @@ class UserService:
             return False
         logger.info(f"User {id} has status {user.status_value}")
         return user.is_active
+
+    def set_last_login(self, id: str, session: Optional[Session] = None) -> bool:
+        last_login = datetime.now()
+        user = self.user_repository.set_session(
+            session).update(id, {"last_login": last_login})
+        if not user:
+            logger.error(f"User {id} not found")
+            return False
+        logger.info(f"User {id} has last login {user.last_login}")
+        return user.last_login.date() == last_login.date()
