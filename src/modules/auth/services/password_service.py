@@ -51,3 +51,9 @@ class PasswordService:
         except Exception as e:
             logger.error(f"Error updating password for user {user_id}: {e}")
             raise e
+
+    def verify(self, user_id: str, password_str: str) -> bool:
+        password = self.get_password(user_id)
+        if not password:
+            return False
+        return bcrypt.checkpw(password_str.encode(), password.hash.encode())
