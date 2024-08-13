@@ -1,4 +1,6 @@
 import bcrypt
+from typing import Optional
+from sqlalchemy.orm import Session
 from src.modules.shared.services import logger
 from src.modules.auth.models import PasswordModel
 from src.modules.auth.repositories import PasswordRepository
@@ -11,7 +13,7 @@ class PasswordService:
     def get_password(self, user_id: str) -> PasswordModel:
         return self.password_repository.get_by_id(user_id)
 
-    def create(self, user_id: str, password: str):
+    def create(self, user_id: str, password: str, session: Optional[Session] = None):
         try:
             logger.info(f"Creating password for user {user_id}")
             salt = bcrypt.gensalt().decode()
@@ -25,7 +27,7 @@ class PasswordService:
                 "password": hashed_password,
             }
             logger.info("Password entity data created")
-            return self.password_repository.create(data)
+            return self.password_repository.set_session(session).create(data)
         except Exception as e:
             logger.error(f"Error creating password for user {user_id}: {e}")
             raise e

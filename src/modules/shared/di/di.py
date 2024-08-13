@@ -15,7 +15,8 @@ password_repository = PasswordRepository(session)
 verification_token_repository = VerificationTokenRepository(session)
 user_service = UserService(user_repository)
 password_service = PasswordService(password_repository)
-auth_service = AuthService(user_service, password_service)
 verification_token_service = VerificationTokenService(
     verification_token_repository)
 email_service = EmailService(**EMAIL_SMTP)
+auth_service = AuthService(user_service, email_service,
+                           password_service, verification_token_service)

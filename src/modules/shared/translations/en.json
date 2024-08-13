@@ -2,7 +2,7 @@
   "emails": {
     "signup": {
       "subject": "Signup Verification",
-      "content": "Please verify your email by clicking the link below: {{verification_link}}"
+      "content": "Please verify your email by clicking the link below: <br/><a _target='_blank' title='Verify email' href={{verification_link}}>Verify email</a>"
     }
   }
 }

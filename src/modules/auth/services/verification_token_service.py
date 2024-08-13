@@ -1,4 +1,6 @@
 import secrets
+from typing import Optional
+from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 
 from src.modules.auth.models import VerificationTokenModel
@@ -9,13 +11,13 @@ class VerificationTokenService:
     def __init__(self, repository: VerificationTokenRepository):
         self.repository = repository
 
-    def create(self, user_id: str) -> VerificationTokenModel:
+    def create(self, user_id: str, session: Optional[Session] = None) -> VerificationTokenModel:
         data = {
             "user_id": user_id,
             "token": secrets.token_urlsafe(24),
-            "expires_at": datetime.now() + timedelta(days=1),
+            "expires_at": datetime.now() + timedelta(days=1)
         }
-        return self.repository.create(data)
+        return self.repository.set_session(session).create(data)
 
     def get_by_token(self, token: str) -> VerificationTokenModel:
         return self.repository.get_by_props({"token": token})

@@ -5,6 +5,10 @@ load_dotenv()
 
 DATABASE_URL = getenv("DATABASE_URL") or "sqlite:///app.db"
 
+APP = {
+    "FRONTEND_URL": getenv("FRONTEND_URL"),
+}
+
 EMAIL_SMTP = {
     "SERVER": getenv("EMAIL_SMTP_SERVER"),
     "PORT": getenv("EMAIL_SMTP_PORT"),
