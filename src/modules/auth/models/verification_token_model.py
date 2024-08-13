@@ -5,7 +5,7 @@ from src.modules.shared.sql import BaseModel
 class VerificationTokenModel(BaseModel):
     __tablename__ = "verification_tokens"
 
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(String(36), ForeignKey('users.id'), nullable=False)
     token = Column(String, nullable=False)
     verified_at = Column(DateTime, nullable=True)
     expires_at = Column(DateTime, nullable=False)
