@@ -22,11 +22,23 @@ class VerificationTokenService:
     def get_by_token(self, token: str) -> VerificationTokenModel:
         return self.repository.get_by_props({"token": token})
 
-    def is_expired(self, token: str) -> bool:
-        verification_token = self.get_by_token(token)
-        if not verification_token:
-            return True
+    def is_expired(self, verification_token: VerificationTokenModel) -> bool:
         return verification_token.expires_at.timestamp() < datetime.now().timestamp()
 
-    def delete(self, token: str) -> None:
-        return self.repository.delete_by_properties({"token": token})
+    def is_verified(self, verification_token: VerificationTokenModel) -> bool:
+        return verification_token.verified_at is not None
+
+    def verify_token(self, token: str) -> bool:
+        vtoken = self.get_by_token(token)
+        if not vtoken:
+            return False
+        if self.is_expired(vtoken):
+            return False
+        if self.is_verified(vtoken):
+            return False
+        id = str(vtoken.id)
+        data = {
+            "verified_at": datetime.now()
+        }
+        self.repository.update(id, data)
+        return True
