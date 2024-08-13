@@ -17,5 +17,25 @@ class UserModel(BaseModel):
     def full_name(self):
         return f"{self.name} {self.last_name}"
 
+    @property
+    def role_value(self):
+        return str(self.role)
+
+    @property
+    def status_value(self):
+        return str(self.status)
+
+    @property
+    def is_active(self):
+        return self.status_value == "active"
+
+    @property
+    def is_inactive(self):
+        return self.status_value == "inactive"
+
+    @property
+    def is_admin(self):
+        return self.role_value == "admin"
+
     def __repr__(self):
         return f"<User(id={self.id}, name='{self.name}', email='{self.email}', status='{self.status}')>"

@@ -3,6 +3,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 
+from src.modules.shared.services import logger
 from src.modules.auth.models import VerificationTokenModel
 from src.modules.auth.repositories import VerificationTokenRepository
 
@@ -28,17 +29,22 @@ class VerificationTokenService:
     def is_verified(self, verification_token: VerificationTokenModel) -> bool:
         return verification_token.verified_at is not None
 
-    def verify_token(self, token: str) -> bool:
-        vtoken = self.get_by_token(token)
-        if not vtoken:
-            return False
-        if self.is_expired(vtoken):
-            return False
-        if self.is_verified(vtoken):
-            return False
-        id = str(vtoken.id)
-        data = {
+    def verify_token(self, token_str: str, session: Optional[Session] = None):
+        token = self.get_by_token(token_str)
+        response = {"user_id": None, "verified": False}
+        if not token:
+            logger.error(f"Verification token {token_str} not found")
+            return response
+        response["user_id"] = str(token.user_id)
+        if self.is_expired(token):
+            logger.error(f"Verification token {token_str} is expired")
+            return response
+        if self.is_verified(token):
+            logger.error(f"Verification token {token_str} is already verified")
+            return response
+        self.repository.set_session(session).update(str(token.id), {
             "verified_at": datetime.now()
-        }
-        self.repository.update(id, data)
-        return True
+        })
+        logger.info(f"Verification token {token_str} has been verified")
+        response["verified"] = True
+        return response

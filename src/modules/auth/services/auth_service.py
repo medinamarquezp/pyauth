@@ -43,7 +43,7 @@ class AuthService:
             created_password = self.password_service.create(
                 str(user.id), password, session)
             logger.info(f"Password created: {created_password.id}")
-            self.send_signup_email(user, session)
+            self._send_signup_email(user, session)
             logger.info(f"Signup email sent to: {user.email}")
             session.commit()
             return True
@@ -58,7 +58,28 @@ class AuthService:
         finally:
             session.close()
 
-    def send_signup_email(self, user: UserModel, session: Session, language="es"):
+    def verify_signup(self, token_str: str) -> bool:
+        session = DatabaseManager().get_session()
+        try:
+            session.begin()
+            token = self.verification_token_service.verify_token(
+                token_str, session)
+            if not token["verified"]:
+                raise ValueError("Token is not verified")
+            user_activated = self.user_service.activate(
+                token["user_id"], session)
+            if not user_activated:
+                raise ValueError("User is not activated")
+            session.commit()
+            return user_activated
+        except Exception as err:
+            logger.error(f"Error verifying signup: {err}")
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
+    def _send_signup_email(self, user: UserModel, session: Session, language="es"):
         token = self.verification_token_service.create(
             str(user.id), session).token
         email_contents = get_email_contents(language, "signup")
