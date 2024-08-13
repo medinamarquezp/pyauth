@@ -1,12 +1,12 @@
-from sqlalchemy import Column, String, Integer, ForeignKey
 from src.modules.shared.sql import BaseModel
+from sqlalchemy import Column, String, ForeignKey
 
 
 class PasswordModel(BaseModel):
     __tablename__ = 'passwords'
 
     user_id = Column(String(36), ForeignKey('users.id'), nullable=False)
-    password = Column(String(120), nullable=False)
+    hash = Column(String(120), nullable=False)
     salt = Column(String(120), nullable=False)
 
     def __repr__(self):

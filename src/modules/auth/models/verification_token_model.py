@@ -1,5 +1,5 @@
-from sqlalchemy import Column, DateTime, String, Integer, ForeignKey
 from src.modules.shared.sql import BaseModel
+from sqlalchemy import Column, DateTime, String, ForeignKey
 
 
 class VerificationTokenModel(BaseModel):
