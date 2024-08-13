@@ -8,9 +8,25 @@ T = TypeVar('T', bound=DeclarativeBase)
 
 
 class BaseRepository(Generic[T], ABC):
+    _is_session_managed = False
+
     def __init__(self, session: Session, model: Type[T]):
         self.session = session
         self.model = model
+
+    def set_session(self, session: Optional[Session] = None):
+        if session:
+            self.session = session
+            self._is_session_managed = True
+        return self
+
+    def commit(self):
+        self.session.flush()
+        if not self._is_session_managed:
+            self.session.commit()
+        else:
+            self.session.expire_all()
+        self._is_session_managed = False
 
     def list(
         self,
@@ -41,32 +57,32 @@ class BaseRepository(Generic[T], ABC):
     def create(self, data: Dict[str, Any]) -> T:
         entity = self.model(**data)
         self.session.add(entity)
-        self.session.commit()
+        self.commit()
         return entity
 
     def update(self, id: str, changes: Dict[str, Any]) -> Optional[T]:
         entity = self.get_by_id(id)
-        if entity:
-            for key, value in changes.items():
-                setattr(entity, key, value)
-            self.session.commit()
-            return entity
-        return None
+        if not entity:
+            return None
+        for key, value in changes.items():
+            setattr(entity, key, value)
+        self.commit()
+        return entity
 
     def delete(self, id: str) -> None:
         entity = self.get_by_id(id)
         if entity:
             self.session.delete(entity)
-            self.session.commit()
+            self.commit()
 
     def delete_all(self) -> None:
         self.session.execute(delete(self.model))
-        self.session.commit()
+        self.commit()
 
     def delete_by_properties(self, props: Dict[str, Any]) -> None:
         query = delete(self.model).filter_by(**props)
         self.session.execute(query)
-        self.session.commit()
+        self.commit()
 
     def upsert(self, entity: Dict[str, Any]) -> Optional[T]:
         id = entity.get('id')
@@ -92,7 +108,7 @@ class BaseRepository(Generic[T], ABC):
     def bulk_create(self, entities: List[Dict[str, Any]]) -> List[T]:
         model_entities = [self.model(**entity) for entity in entities]
         self.session.add_all(model_entities)
-        self.session.commit()
+        self.commit()
         return model_entities
 
     def bulk_update(self, entities: List[Dict[str, Any]]) -> List[T]:
@@ -101,7 +117,7 @@ class BaseRepository(Generic[T], ABC):
             entity = self.model(**entity_dict)
             updated_entity = self.session.merge(entity)
             updated_entities.append(updated_entity)
-        self.session.commit()
+        self.commit()
         return updated_entities
 
     @abstractmethod
