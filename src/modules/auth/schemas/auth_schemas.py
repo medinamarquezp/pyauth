@@ -4,7 +4,7 @@ signup_schema = {
         "name": {"type": "string"},
         "last_name": {"type": "string"},
         "email": {"type": "string", "format": "email"},
-        "password": {"type": "string", "minLength": 8, "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$"},
+        "password": {"type": "string", "minLength": 8, "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[a-zA-Z\\d@$!%*?&]{8,}$"},
     },
     "required": ["email", "password"],
 }
