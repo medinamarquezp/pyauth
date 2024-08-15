@@ -6,9 +6,10 @@ from src.config.app import APP
 from .password_service import PasswordService
 from src.modules.user.models import UserModel
 from src.modules.shared.services import logger
+from src.modules.auth.models import SessionModel
 from src.modules.user.services import UserService
-from ..schemas import signup_schema, signin_schema
 from src.modules.shared.sql import DatabaseManager
+from ..schemas import signup_schema, signin_schema
 from src.modules.shared.services import EmailService
 from src.modules.shared.translations import get_email_contents
 from src.modules.auth.services.session_service import SessionService
@@ -88,6 +89,7 @@ class AuthService:
             session.begin()
             validate(instance=data, schema=signin_schema)
             user = self.user_service.get_by_email(data["email"])
+            logger.info(f"User found: {user.id}")
             if not user:
                 raise ValueError("User not found")
             if not user.is_active:
@@ -96,12 +98,11 @@ class AuthService:
             if not self.password_service.verify(user_id, data["password"]):
                 raise ValueError("Invalid password")
             self.user_service.set_last_login(user_id, session)
-            session = self.session_service.create(user_id, session)
+            logger.info(f"User last login set to: {user.last_login}")
+            auth_session = self.session_service.create(user_id, session)
+            logger.info(f"Session created: {auth_session.id}")
             session.commit()
-            return {
-                "user": user,
-                "session": session
-            }
+            return self._prepare_signin_response(user, auth_session)
         except Exception as err:
             logger.error(f"Error signing in: {err}")
             session.rollback()
@@ -119,3 +120,20 @@ class AuthService:
         content = email_contents["content"].replace(
             "{{verification_link}}", verification_link)
         self.email_service.send_email(user.email, subject, content)
+        
+    def _prepare_signin_response(self, user: UserModel, session: SessionModel):
+        return {
+                "user": {
+                    "id": user.id,
+                    "email": user.email,
+                    "name": user.name,
+                    "role": user.role,
+                    "status": user.status,
+                    "last_login": user.last_login.strftime("%Y-%m-%d %H:%M:%S")
+                },
+                "session": {
+                    "id": session.id,
+                    "token": session.session_id,
+                    "expires_at": session.expires_at.strftime("%Y-%m-%d %H:%M:%S")
+                }
+            }

@@ -11,7 +11,7 @@ class PasswordService:
         self.password_repository = password_repository
 
     def get_password(self, user_id: str) -> PasswordModel:
-        return self.password_repository.get_by_id(user_id)
+        return self.password_repository.get_by_props({ "user_id": user_id })
 
     def create(self, user_id: str, password: str, session: Optional[Session] = None):
         try:
@@ -53,7 +53,10 @@ class PasswordService:
             raise e
 
     def verify(self, user_id: str, password_str: str) -> bool:
+        logger.info(f"Verifying password for user {user_id}")
         password = self.get_password(user_id)
         if not password:
+            logger.error(f"Password not found for user {user_id}")
             return False
+        logger.info(f"Password found for user {user_id}")
         return bcrypt.checkpw(password_str.encode(), password.hash.encode())
