@@ -3,14 +3,15 @@ from jsonschema import validate
 from sqlalchemy.orm import Session
 
 from src.config.app import APP
-from ..schemas import signup_schema
 from .password_service import PasswordService
 from src.modules.user.models import UserModel
 from src.modules.shared.services import logger
 from src.modules.user.services import UserService
+from ..schemas import signup_schema, signin_schema
 from src.modules.shared.sql import DatabaseManager
 from src.modules.shared.services import EmailService
 from src.modules.shared.translations import get_email_contents
+from src.modules.auth.services.session_service import SessionService
 from src.modules.auth.services.verification_token_service import VerificationTokenService
 
 
@@ -19,11 +20,13 @@ class AuthService:
         self,
         user_service: UserService,
         email_service: EmailService,
+        session_service: SessionService,
         password_service: PasswordService,
         verification_token_service: VerificationTokenService,
     ):
         self.user_service = user_service
         self.email_service = email_service
+        self.session_service = session_service
         self.password_service = password_service
         self.verification_token_service = verification_token_service
 
@@ -74,6 +77,33 @@ class AuthService:
             return user_activated
         except Exception as err:
             logger.error(f"Error verifying signup: {err}")
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
+    def signin(self, data: dict):
+        session = DatabaseManager().get_session()
+        try:
+            session.begin()
+            validate(instance=data, schema=signin_schema)
+            user = self.user_service.get_by_email(data["email"])
+            if not user:
+                raise ValueError("User not found")
+            if not user.is_active:
+                raise ValueError("User is not active")
+            user_id = str(user.id)
+            if not self.password_service.verify(user_id, data["password"]):
+                raise ValueError("Invalid password")
+            self.user_service.set_last_login(user_id, session)
+            session = self.session_service.create(user_id, session)
+            session.commit()
+            return {
+                "user": user,
+                "session": session
+            }
+        except Exception as err:
+            logger.error(f"Error signing in: {err}")
             session.rollback()
             return False
         finally:
