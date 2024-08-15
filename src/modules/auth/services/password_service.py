@@ -18,13 +18,13 @@ class PasswordService:
             logger.info(f"Creating password for user {user_id}")
             salt = bcrypt.gensalt().decode()
             logger.info("Salt created")
-            hashed_password = bcrypt.hashpw(
+            hash = bcrypt.hashpw(
                 password.encode(), salt.encode()).decode()
             logger.info("Password hashed")
             data = {
                 "user_id": user_id,
                 "salt": salt,
-                "password": hashed_password,
+                "hash": hash,
             }
             logger.info("Password entity data created")
             return self.password_repository.set_session(session).create(data)
@@ -40,12 +40,12 @@ class PasswordService:
                 raise Exception("Password not found")
             salt = password.salt.encode()
             logger.info("Salt encoded")
-            hashed_password = bcrypt.hashpw(
+            hash = bcrypt.hashpw(
                 new_password.encode(), salt
             ).decode()
             logger.info("Password hashed")
             data = {
-                "password": hashed_password,
+                "hash": hash,
             }
             return self.password_repository.update(user_id, data)
         except Exception as e:
