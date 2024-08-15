@@ -122,18 +122,20 @@ class AuthService:
         self.email_service.send_email(user.email, subject, content)
         
     def _prepare_signin_response(self, user: UserModel, session: SessionModel):
-        return {
+        response = {
                 "user": {
                     "id": user.id,
                     "email": user.email,
                     "name": user.name,
                     "role": user.role,
                     "status": user.status,
-                    "last_login": user.last_login.strftime("%Y-%m-%d %H:%M:%S")
                 },
                 "session": {
                     "id": session.id,
-                    "token": session.session_id,
+                    "token": session.token,
                     "expires_at": session.expires_at.strftime("%Y-%m-%d %H:%M:%S")
-                }
             }
+        }
+        if user.last_login is not None:
+            response["user"]["last_login"] = user.last_login.strftime("%Y-%m-%d %H:%M:%S")
+        return response

@@ -11,6 +11,6 @@ class SessionRepository(BaseRepository[SessionModel]):
     def to_dict(self, entity: SessionModel) -> Dict[str, Any]:
         return {
             "user_id": entity.user_id,
-            "session_id": entity.session_id,
+            "token": entity.token,
             "expires_at": entity.expires_at,
         }

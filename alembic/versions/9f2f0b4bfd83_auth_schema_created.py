@@ -1,8 +1,8 @@
 """Auth schema created
 
-Revision ID: 0e39a99f6862
+Revision ID: 9f2f0b4bfd83
 Revises: 
-Create Date: 2024-08-14 01:32:09.994902
+Create Date: 2024-08-16 00:39:21.346105
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '0e39a99f6862'
+revision: str = '9f2f0b4bfd83'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -45,7 +45,7 @@ def upgrade() -> None:
     )
     op.create_table('sessions',
     sa.Column('user_id', sa.String(length=36), nullable=False),
-    sa.Column('session_id', sa.String(length=36), nullable=False),
+    sa.Column('token', sa.String(length=36), nullable=False),
     sa.Column('expires_at', sa.DateTime(), nullable=False),
     sa.Column('id', sa.String(length=36), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),

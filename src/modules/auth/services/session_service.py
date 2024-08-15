@@ -25,13 +25,13 @@ class SessionService:
             return existing_session
         data = {
             "user_id": user_id,
-            "session_id": secrets.token_urlsafe(32),
+            "token": secrets.token_urlsafe(32),
             "expires_at": datetime.now() + timedelta(days=1)
         }
         return self.repository.set_session(session).create(data)
 
-    def is_session_expired(self, session_id: str) -> bool:
-        session = self.repository.get_by_id(session_id)
+    def is_session_expired(self, token: str) -> bool:
+        session = self.repository.get_by_props({ "token": token })
         if not session:
             return True
         return self.check_expired(session)
