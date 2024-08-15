@@ -59,15 +59,18 @@ class BaseRepository(Generic[T], ABC):
         self.session.add(entity)
         self.commit()
         return entity
-
-    def update(self, id: str, changes: Dict[str, Any]) -> Optional[T]:
-        entity = self.get_by_id(id)
+    
+    def update_by_props(self, props: Dict[str, Any], changes: Dict[str, Any]) -> Optional[T]:
+        entity = self.get_by_props(props)
         if not entity:
             return None
         for key, value in changes.items():
             setattr(entity, key, value)
         self.commit()
         return entity
+
+    def update(self, id: str, changes: Dict[str, Any]) -> Optional[T]:
+        return self.update_by_props({ "id": id }, changes)
 
     def delete(self, id: str) -> None:
         entity = self.get_by_id(id)
