@@ -109,6 +109,10 @@ class AuthService:
             return False
         finally:
             session.close()
+            
+    def signout(self, token: str) -> bool:
+        logger.info(f"Signing out user with token: {token}")
+        return self.session_service.expire_session(token)
 
     def _send_signup_email(self, user: UserModel, session: Session, language="es"):
         token = self.verification_token_service.create(
