@@ -13,6 +13,9 @@ class VerificationTokenService:
         self.repository = repository
 
     def create(self, user_id: str, session: Optional[Session] = None) -> VerificationTokenModel:
+        token = self.get_by_user_id(user_id)
+        if token and not self.is_expired(token):
+            return token
         data = {
             "user_id": user_id,
             "token": secrets.token_urlsafe(24),
@@ -22,6 +25,9 @@ class VerificationTokenService:
 
     def get_by_token(self, token: str) -> VerificationTokenModel:
         return self.repository.get_by_props({"token": token})
+    
+    def get_by_user_id(self, user_id: str) -> VerificationTokenModel:
+        return self.repository.get_by_props({"user_id": user_id})
 
     def is_expired(self, verification_token: VerificationTokenModel) -> bool:
         return verification_token.expires_at.timestamp() < datetime.now().timestamp()

@@ -14,9 +14,7 @@ class SessionService:
 
     def get_user_session(self, user_id: str) -> SessionModel | None:
         session = self.repository.get_by_props({"user_id": user_id })
-        if not session:
-            return None
-        if self.check_expired(session):
+        if not session or self.check_expired(session):
             return None
         return session
 
