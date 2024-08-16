@@ -47,7 +47,7 @@ class AuthService:
             created_password = self.password_service.create(
                 str(user.id), password, session)
             logger.info(f"Password created: {created_password.id}")
-            self._send_signup_email(user, session)
+            self._send_verification_token(user, session, "signup", "/signup/activate", "es")
             logger.info(f"Signup email sent to: {user.email}")
             session.commit()
             return True
@@ -114,15 +114,20 @@ class AuthService:
         logger.info(f"Signing out user with token: {token}")
         return self.session_service.expire_session(token)
 
-    def _send_signup_email(self, user: UserModel, session: Session, language="es"):
+    def _send_verification_token(
+        self, 
+        user: UserModel, 
+        session: Session,
+        email_type: str,
+        path: str,
+        language="es"
+    ):
         token = self.verification_token_service.create(
             str(user.id), session).token
-        email_contents = get_email_contents(language, "signup")
+        email_contents = get_email_contents(language, email_type)
         subject = email_contents["subject"]
-        verification_link = f"{APP['FRONTEND_URL']
-                               }/signup/activate?token={token}"
-        content = email_contents["content"].replace(
-            "{{verification_link}}", verification_link)
+        link = f"{APP['FRONTEND_URL']}{path}?token={token}"
+        content = email_contents["content"].replace("{{link}}", link)
         self.email_service.send_email(user.email, subject, content)
         
     def _prepare_signin_response(self, user: UserModel, session: SessionModel):
