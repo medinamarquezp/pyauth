@@ -48,7 +48,7 @@ class AuthService:
                 str(user.id), password, session)
             logger.info(f"Password created: {created_password.id}")
             self._send_verification_token(
-                user, session, TokenType.SIGNUP, "/signup/activate", "es")
+                user, session, TokenType.SIGNUP, "/auth/activate", "es")
             logger.info(f"Signup email sent to: {user.email}")
             session.commit()
             return True
@@ -114,6 +114,21 @@ class AuthService:
     def signout(self, token: str) -> bool:
         logger.info(f"Signing out user with token: {token}")
         return self.session_service.expire_session(token)
+    
+    def forgot_password(self, email: str) -> bool:
+        try:
+            logger.info(f"Forgot password for user: {email}")
+            user = self.user_service.get_by_email(email)
+            if not user:
+                logger.error(f"User not found: {email}")
+                raise ValueError("User not found")
+            self._send_verification_token(user, None, TokenType.FORGOT, "/auth/forgot")
+            logger.info(f"Forgot password email sent to: {user.email}")
+            return True
+        except Exception as err:
+            logger.error(f"Error sending forgot password token: {err}")
+            return False
+        
 
     def _send_verification_token(
         self,

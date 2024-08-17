@@ -2,7 +2,11 @@
   "emails": {
     "signup": {
       "subject": "Signup Verification",
-      "content": "Please verify your email by clicking the link below: <br/><a _target='_blank' title='Verify email' href={{link}}>Verify email</a>"
+      "content": "<p>Verify your email by clicking the link below:</p><p><a _target='_blank' title='Verify email' href={{link}}>Verify email</a></p>"
+    },
+    "forgot": {
+      "subject": "Forgot Password",
+      "content": "<p>Click the link below to reset your password:</p><p><a _target='_blank' title='Reset password' href={{link}}>Reset password</a></p><p>If you did not request this change, please ignore this email.</p>"
     }
   }
 }

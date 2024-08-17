@@ -2,7 +2,11 @@
   "emails": {
     "signup": {
       "subject": "Verificación de registro",
-      "content": "Por favor verifica tu email haciendo clic en el siguiente enlace: <br/><a _target='_blank' title='Verificar email' href={{link}}>Verificar email</a>"
+      "content": "<p>Verifica tu email haciendo clic en el siguiente enlace:</p><p><a _target='_blank' class='btn btn-primary' title='Verificar email' href={{link}}>Verificar email</a></p>"
+    },
+    "forgot": {
+      "subject": "Recuperar contraseña",
+      "content": "<p>Haz clic en el siguiente enlace para recuperar tu contraseña:</p><p><a _target='_blank' class='btn btn-primary' title='Recuperar contraseña' href={{link}}>Recuperar contraseña</a></p><p>Si no has solicitado este cambio, por favor ignora este correo.</p>"
     }
   }
 }
