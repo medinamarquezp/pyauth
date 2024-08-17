@@ -2,9 +2,9 @@ from typing import Optional
 from datetime import datetime
 from sqlalchemy.orm import Session
 
-from src.modules.user.models import UserModel
 from src.modules.shared.services import logger
 from src.modules.user.repositories import UserRepository
+from src.modules.user.models import UserModel, UserStatus
 
 
 class UserService:
@@ -27,7 +27,7 @@ class UserService:
 
     def activate(self, id: str, session: Optional[Session] = None) -> bool:
         user = self.user_repository.set_session(
-            session).update(id, {"status": "active"})
+            session).update(id, {"status": UserStatus.ACTIVE})
         if not user:
             logger.error(f"User {id} not found")
             return False
