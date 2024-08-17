@@ -11,6 +11,12 @@ class UserService:
     def __init__(self, user_repository: UserRepository):
         self.user_repository = user_repository
 
+    def get_by_id(self, id: str) -> UserModel:
+        return self.user_repository.get_by_id(id)
+
+    def get_by_email(self, email: str) -> UserModel:
+        return self.user_repository.find_by_email(email)
+    
     def create(self, data: dict, session: Optional[Session] = None) -> UserModel:
         try:
             logger.info("Creating user")
@@ -18,12 +24,6 @@ class UserService:
         except Exception as e:
             logger.error(f"Error creating user: {e}")
             raise e
-
-    def get_by_id(self, id: str) -> UserModel:
-        return self.user_repository.get_by_id(id)
-
-    def get_by_email(self, email: str) -> UserModel:
-        return self.user_repository.find_by_email(email)
 
     def activate(self, id: str, session: Optional[Session] = None) -> bool:
         user = self.user_repository.set_session(

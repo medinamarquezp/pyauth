@@ -25,6 +25,10 @@ class VerificationTokenModel(BaseModel):
         return bool(self.verified_at is not None)
     
     @property
+    def is_valid(self):
+        return not self.is_expired and not self.is_verified
+    
+    @property
     def is_forgot(self):
         return bool(self.type == TokenType.FORGOT)
     

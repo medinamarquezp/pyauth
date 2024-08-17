@@ -14,7 +14,7 @@ class SessionService:
 
     def get_user_session(self, user_id: str) -> SessionModel | None:
         session = self.repository.get_by_props({"user_id": user_id })
-        if not session or self.check_expired(session):
+        if not session or session.is_expired:
             return None
         return session
 
@@ -35,10 +35,8 @@ class SessionService:
         session = self.repository.get_by_props({ "token": token })
         if not session:
             return True
-        return self.check_expired(session)
+        return session.is_expired
 
-    def check_expired(self, session: SessionModel) -> bool:
-        return session.expires_at.timestamp() < datetime.now().timestamp()
     
     def expire_session(self, token: str) -> bool:
         session_expired = self.repository.update_by_props({ "token": token }, { "expires_at": datetime.now() })

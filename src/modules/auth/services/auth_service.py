@@ -1,4 +1,3 @@
-import jsonschema
 from jsonschema import validate
 from sqlalchemy.orm import Session
 
@@ -32,9 +31,7 @@ class AuthService:
         self.verification_token_service = verification_token_service
 
     def signup(self, data: dict):
-        session = DatabaseManager().get_session()
         try:
-            session.begin()
             validate(instance=data, schema=signup_schema)
             existing_user = self.user_service.get_by_email(data["email"])
             if existing_user:
@@ -42,55 +39,40 @@ class AuthService:
             logger.info(f"Signing up user: {data['email']}")
             password = data.pop("password", None)
             logger.info("Password extracted from incoming data")
-            user = self.user_service.create(data, session)
-            logger.info(f"User created: {user.id}")
-            created_password = self.password_service.create(
-                str(user.id), password, session)
-            logger.info(f"Password created: {created_password.id}")
-            self._send_verification_token(
-                user, session, TokenType.SIGNUP, "/auth/activate", "es")
-            logger.info(f"Signup email sent to: {user.email}")
-            session.commit()
-            return True
-        except jsonschema.ValidationError as err:
-            logger.error(f"Error validating signup data: {err}")
-            session.rollback()
-            return False
+            with DatabaseManager().generate_session() as session:
+                user = self.user_service.create(data, session)
+                logger.info(f"User created: {user.id}")
+                created_password = self.password_service.create(
+                    str(user.id), password, session)
+                logger.info(f"Password created: {created_password.id}")
+                self._send_verification_token(
+                    user, session, TokenType.SIGNUP, "/auth/activate", "es")
+                logger.info(f"Signup email sent to: {user.email}")
+                return True
         except Exception as err:
-            logger.error(f"Error signing up: {err}")
-            session.rollback()
+            logger.error(f"Error on signing up: {err}")
             return False
-        finally:
-            session.close()
 
     def verify_signup(self, token_str: str) -> bool:
-        session = DatabaseManager().get_session()
         try:
-            session.begin()
-            token = self.verification_token_service.verify_token(
-                token_str, session)
-            if not token["verified"]:
-                raise ValueError("Token is not verified")
-            user_activated = self.user_service.activate(
-                token["user_id"], session)
-            if not user_activated:
-                raise ValueError("User is not activated")
-            session.commit()
-            return user_activated
+            with DatabaseManager().generate_session() as session:
+                token = self.verification_token_service.verify_token(
+                    token_str, session)
+                if not token["verified"]:
+                    raise ValueError("Token is not verified")
+                user_activated = self.user_service.activate(
+                    token["user_id"], session)
+                if not user_activated:
+                    raise ValueError("User is not activated")
+                return user_activated
         except Exception as err:
             logger.error(f"Error verifying signup: {err}")
-            session.rollback()
             return False
-        finally:
-            session.close()
 
     def signin(self, data: dict):
-        session = DatabaseManager().get_session()
         try:
-            session.begin()
             validate(instance=data, schema=signin_schema)
             user = self.user_service.get_by_email(data["email"])
-            logger.info(f"User found: {user.id}")
             if not user:
                 raise ValueError("User not found")
             if not user.is_active:
@@ -98,18 +80,15 @@ class AuthService:
             user_id = str(user.id)
             if not self.password_service.verify(user_id, data["password"]):
                 raise ValueError("Invalid password")
-            self.user_service.set_last_login(user_id, session)
-            logger.info(f"User last login set to: {user.last_login}")
-            auth_session = self.session_service.create(user_id, session)
-            logger.info(f"Session created: {auth_session.id}")
-            session.commit()
-            return self._prepare_signin_response(user, auth_session)
+            with DatabaseManager().generate_session() as session:
+                self.user_service.set_last_login(user_id, session)
+                logger.info(f"User last login set to: {user.last_login}")
+                auth_session = self.session_service.create(user_id, session)
+                logger.info(f"Session created: {auth_session.id}")
+                return self._prepare_signin_response(user, auth_session)
         except Exception as err:
-            logger.error(f"Error signing in: {err}")
-            session.rollback()
+            logger.error(f"Error on signing in: {err}")
             return False
-        finally:
-            session.close()
 
     def signout(self, token: str) -> bool:
         logger.info(f"Signing out user with token: {token}")
@@ -120,7 +99,6 @@ class AuthService:
             logger.info(f"Forgot password for user: {email}")
             user = self.user_service.get_by_email(email)
             if not user:
-                logger.error(f"User not found: {email}")
                 raise ValueError("User not found")
             self._send_verification_token(
                 user, None, TokenType.FORGOT, "/auth/forgot")

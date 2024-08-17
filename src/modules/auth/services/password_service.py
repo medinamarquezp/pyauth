@@ -15,6 +15,9 @@ class PasswordService:
 
     def create(self, user_id: str, password: str, session: Optional[Session] = None):
         try:
+            existing_password = self.get_password(user_id)
+            if existing_password:
+                raise Exception("Password already exists")
             logger.info(f"Creating password for user {user_id}")
             salt = bcrypt.gensalt().decode()
             logger.info("Salt created")

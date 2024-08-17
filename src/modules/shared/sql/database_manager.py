@@ -1,8 +1,8 @@
 from typing import Generator
 from sqlalchemy import create_engine
 from contextlib import contextmanager
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker, Session
+from src.modules.shared.services import logger
 
 from src.config import DATABASE_URL
 
@@ -27,7 +27,8 @@ class DatabaseManager:
         try:
             yield session
             session.commit()
-        except SQLAlchemyError as e:
+        except Exception as e:
+            logger.error(f"Error processing transaction: {e}")
             session.rollback()
             raise e
         finally:

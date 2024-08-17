@@ -1,3 +1,4 @@
+from datetime import datetime
 from src.modules.shared.sql import BaseModel
 from sqlalchemy import Column, DateTime, String, ForeignKey
 
@@ -8,6 +9,10 @@ class SessionModel(BaseModel):
     user_id = Column(String(36), ForeignKey('users.id'), nullable=False)
     token = Column(String(36), nullable=False)
     expires_at = Column(DateTime, nullable=False)
+    
+    @property
+    def is_expired(self):
+        return self.expires_at.timestamp() < datetime.now().timestamp()
 
     def __repr__(self):
         return f"<SessionModel(user_id={self.user_id}, token={self.token}, expires_at={self.expires_at})>"
