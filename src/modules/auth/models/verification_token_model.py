@@ -7,38 +7,39 @@ class TokenType(PyEnum):
     SIGNUP = "SIGNUP"
     FORGOT = "FORGOT"
 
+
 class VerificationTokenModel(BaseModel):
     __tablename__ = "verification_tokens"
 
     user_id = Column(String(36), ForeignKey('users.id'), nullable=False)
     token = Column(String, nullable=False)
+    type = Column(Enum(TokenType), nullable=False)
     verified_at = Column(DateTime, nullable=True)
     expires_at = Column(DateTime, nullable=False)
-    type = Column(Enum(TokenType), nullable=False)
-    
+
     @property
     def is_expired(self):
         return bool(self.expires_at < datetime.now())
-    
+
     @property
     def is_verified(self):
         return bool(self.verified_at is not None)
-    
+
     @property
     def is_valid(self):
         return not self.is_expired and not self.is_verified
-    
+
     @property
     def is_forgot(self):
         return bool(self.type == TokenType.FORGOT)
-    
+
     @property
     def is_signup(self):
         return bool(self.type == TokenType.SIGNUP)
-    
+
     def __repr__(self):
         return f"<VerificationTokenModel(user_id={self.user_id}, type={self.type}, token={self.token}, expires_at={self.expires_at})>"
-    
+
     def to_dict(self):
         return {
             "id": self.id,

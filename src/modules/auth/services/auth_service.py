@@ -57,7 +57,7 @@ class AuthService:
         try:
             with DatabaseManager().generate_session() as session:
                 token = self.verification_token_service.verify_token(
-                    token_str, session)
+                    token_str, TokenType.SIGNUP, session)
                 if not token["verified"]:
                     raise ValueError("Token is not verified")
                 user_activated = self.user_service.activate(
