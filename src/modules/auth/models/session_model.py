@@ -11,3 +11,11 @@ class SessionModel(BaseModel):
 
     def __repr__(self):
         return f"<SessionModel(user_id={self.user_id}, token={self.token}, expires_at={self.expires_at})>"
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "token": self.token,
+            "expires_at": self.expires_at
+        }

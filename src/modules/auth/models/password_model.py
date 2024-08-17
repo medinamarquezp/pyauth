@@ -11,3 +11,11 @@ class PasswordModel(BaseModel):
 
     def __repr__(self):
         return f"<Password(id={self.id}, user_id={self.user_id})>"
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "hash": self.hash,
+            "salt": self.salt
+        }

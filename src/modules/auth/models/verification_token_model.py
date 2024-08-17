@@ -34,3 +34,13 @@ class VerificationTokenModel(BaseModel):
     
     def __repr__(self):
         return f"<VerificationTokenModel(user_id={self.user_id}, type={self.type}, token={self.token}, expires_at={self.expires_at})>"
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "token": self.token,
+            "expires_at": self.expires_at,
+            "verified_at": self.verified_at,
+            "type": self.type
+        }

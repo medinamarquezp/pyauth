@@ -47,3 +47,14 @@ class UserModel(BaseModel):
 
     def __repr__(self):
         return f"<User(id={self.id}, name='{self.name}', email='{self.email}', status='{self.status_value}')>"
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "role": self.role_value,
+            "status": self.status_value,
+            "last_login": self.last_login
+        }

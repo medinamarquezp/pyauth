@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, delete, func
 from sqlalchemy.orm import Session, DeclarativeBase
@@ -122,7 +122,3 @@ class BaseRepository(Generic[T], ABC):
             updated_entities.append(updated_entity)
         self.commit()
         return updated_entities
-
-    @abstractmethod
-    def to_dict(self, entity: T) -> Dict[str, Any]:
-        pass
