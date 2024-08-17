@@ -14,7 +14,7 @@ class VerificationTokenService:
 
     def create(self, user_id: str, type: TokenType, session: Optional[Session] = None) -> VerificationTokenModel:
         token = self.get_by_user_id(user_id, type)
-        if token and not self.is_expired(token):
+        if token and not token.is_expired:
             return token
         data = {
             "user_id": user_id,
@@ -30,12 +30,6 @@ class VerificationTokenService:
     def get_by_user_id(self, user_id: str, type: TokenType) -> VerificationTokenModel:
         return self.repository.get_by_props({"user_id": user_id, "type": type})
 
-    def is_expired(self, verification_token: VerificationTokenModel) -> bool:
-        return verification_token.expires_at.timestamp() < datetime.now().timestamp()
-
-    def is_verified(self, verification_token: VerificationTokenModel) -> bool:
-        return verification_token.verified_at is not None
-
     def verify_token(self, token_str: str, session: Optional[Session] = None):
         token = self.get_by_token(token_str)
         response = {"user_id": None, "verified": False}
@@ -43,10 +37,10 @@ class VerificationTokenService:
             logger.error(f"Verification token {token_str} not found")
             return response
         response["user_id"] = str(token.user_id)
-        if self.is_expired(token):
+        if token.is_expired:
             logger.error(f"Verification token {token_str} is expired")
             return response
-        if self.is_verified(token):
+        if token.is_verified:
             logger.error(f"Verification token {token_str} is already verified")
             return response
         self.repository.set_session(session).update(str(token.id), {

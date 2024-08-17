@@ -114,7 +114,7 @@ class AuthService:
     def signout(self, token: str) -> bool:
         logger.info(f"Signing out user with token: {token}")
         return self.session_service.expire_session(token)
-    
+
     def forgot_password(self, email: str) -> bool:
         try:
             logger.info(f"Forgot password for user: {email}")
@@ -122,13 +122,13 @@ class AuthService:
             if not user:
                 logger.error(f"User not found: {email}")
                 raise ValueError("User not found")
-            self._send_verification_token(user, None, TokenType.FORGOT, "/auth/forgot")
+            self._send_verification_token(
+                user, None, TokenType.FORGOT, "/auth/forgot")
             logger.info(f"Forgot password email sent to: {user.email}")
             return True
         except Exception as err:
             logger.error(f"Error sending forgot password token: {err}")
             return False
-        
 
     def _send_verification_token(
         self,
@@ -149,17 +149,17 @@ class AuthService:
     def _prepare_signin_response(self, user: UserModel, session: SessionModel):
         response = {
             "user": {
-                    "id": user.id,
-                    "email": user.email,
-                    "name": user.name,
-                    "role": user.role_value,
-                    "status": user.status_value,
-                },
+                "id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "role": user.role_value,
+                "status": user.status_value,
+            },
             "session": {
-                    "id": session.id,
-                    "token": session.token,
-                    "expires_at": session.expires_at.strftime("%Y-%m-%d %H:%M:%S")
-                    }
+                "id": session.id,
+                "token": session.token,
+                "expires_at": session.expires_at.strftime("%Y-%m-%d %H:%M:%S")
+            }
         }
         if user.last_login is not None:
             response["user"]["last_login"] = user.last_login.strftime(
