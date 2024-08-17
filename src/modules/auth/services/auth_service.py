@@ -6,11 +6,11 @@ from src.config.app import APP
 from .password_service import PasswordService
 from src.modules.user.models import UserModel
 from src.modules.shared.services import logger
-from src.modules.auth.models import SessionModel
 from src.modules.user.services import UserService
 from src.modules.shared.sql import DatabaseManager
 from ..schemas import signup_schema, signin_schema
 from src.modules.shared.services import EmailService
+from src.modules.auth.models import SessionModel, TokenType
 from src.modules.shared.translations import get_email_contents
 from src.modules.auth.services.session_service import SessionService
 from src.modules.auth.services.verification_token_service import VerificationTokenService
@@ -47,7 +47,8 @@ class AuthService:
             created_password = self.password_service.create(
                 str(user.id), password, session)
             logger.info(f"Password created: {created_password.id}")
-            self._send_verification_token(user, session, "signup", "/signup/activate", "es")
+            self._send_verification_token(
+                user, session, TokenType.SIGNUP, "/signup/activate", "es")
             logger.info(f"Signup email sent to: {user.email}")
             session.commit()
             return True
@@ -109,42 +110,43 @@ class AuthService:
             return False
         finally:
             session.close()
-            
+
     def signout(self, token: str) -> bool:
         logger.info(f"Signing out user with token: {token}")
         return self.session_service.expire_session(token)
 
     def _send_verification_token(
-        self, 
-        user: UserModel, 
-        session: Session,
-        email_type: str,
+        self,
+        user: UserModel,
+        session: Session | None,
+        type: TokenType,
         path: str,
         language="es"
     ):
         token = self.verification_token_service.create(
-            str(user.id), session).token
-        email_contents = get_email_contents(language, email_type)
+            str(user.id), type, session).token
+        email_contents = get_email_contents(language, type.value)
         subject = email_contents["subject"]
         link = f"{APP['FRONTEND_URL']}{path}?token={token}"
         content = email_contents["content"].replace("{{link}}", link)
         self.email_service.send_email(user.email, subject, content)
-        
+
     def _prepare_signin_response(self, user: UserModel, session: SessionModel):
         response = {
-                "user": {
+            "user": {
                     "id": user.id,
                     "email": user.email,
                     "name": user.name,
-                    "role": user.role,
-                    "status": user.status,
+                    "role": user.role_value,
+                    "status": user.status_value,
                 },
-                "session": {
+            "session": {
                     "id": session.id,
                     "token": session.token,
                     "expires_at": session.expires_at.strftime("%Y-%m-%d %H:%M:%S")
-            }
+                    }
         }
         if user.last_login is not None:
-            response["user"]["last_login"] = user.last_login.strftime("%Y-%m-%d %H:%M:%S")
+            response["user"]["last_login"] = user.last_login.strftime(
+                "%Y-%m-%d %H:%M:%S")
         return response

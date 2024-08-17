@@ -3,13 +3,13 @@ from sqlalchemy import Column, String, Enum, DateTime
 from src.modules.shared.sql import BaseModel
 
 class UserRole(PyEnum):
-    ADMIN = "admin"
-    USER = "user"
+    ADMIN = "ADMIN"
+    USER = "USER"
     
 class UserStatus(PyEnum):
-    ACTIVE = "active"
-    INACTIVE = "inactive"
-    PENDING_ACTIVATION = "pending_activation"
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+    PENDING_ACTIVATION = "PENDING_ACTIVATION"
 
 class UserModel(BaseModel):
     __tablename__ = 'users'
@@ -27,23 +27,23 @@ class UserModel(BaseModel):
 
     @property
     def role_value(self):
-        return str(self.role)
+        return self.role.value
 
     @property
     def status_value(self):
-        return str(self.status)
+        return self.status.value
 
     @property
     def is_active(self):
-        return self.status_value == UserStatus.ACTIVE
+        return self.status_value == UserStatus.ACTIVE.value
 
     @property
     def is_inactive(self):
-        return self.status_value == UserStatus.INACTIVE
+        return self.status_value == UserStatus.INACTIVE.value
 
     @property
     def is_admin(self):
-        return self.role_value == UserRole.ADMIN
+        return self.role_value == UserRole.ADMIN.value
 
     def __repr__(self):
-        return f"<User(id={self.id}, name='{self.name}', email='{self.email}', status='{self.status}')>"
+        return f"<User(id={self.id}, name='{self.name}', email='{self.email}', status='{self.status_value}')>"

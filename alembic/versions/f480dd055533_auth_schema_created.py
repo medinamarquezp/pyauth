@@ -1,8 +1,8 @@
 """Auth schema created
 
-Revision ID: 9f2f0b4bfd83
+Revision ID: f480dd055533
 Revises: 
-Create Date: 2024-08-16 00:39:21.346105
+Create Date: 2024-08-17 13:16:11.694000
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '9f2f0b4bfd83'
+revision: str = 'f480dd055533'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,8 +24,8 @@ def upgrade() -> None:
     sa.Column('name', sa.String(length=100), nullable=True),
     sa.Column('last_name', sa.String(length=100), nullable=True),
     sa.Column('email', sa.String(length=120), nullable=False),
-    sa.Column('role', sa.Enum('admin', 'user'), nullable=True),
-    sa.Column('status', sa.Enum('active', 'inactive', 'pending_activation'), nullable=True),
+    sa.Column('role', sa.Enum('ADMIN', 'USER', name='userrole'), nullable=True),
+    sa.Column('status', sa.Enum('ACTIVE', 'INACTIVE', 'PENDING_ACTIVATION', name='userstatus'), nullable=True),
     sa.Column('last_login', sa.DateTime(timezone=True), nullable=True),
     sa.Column('id', sa.String(length=36), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
@@ -58,6 +58,7 @@ def upgrade() -> None:
     sa.Column('token', sa.String(), nullable=False),
     sa.Column('verified_at', sa.DateTime(), nullable=True),
     sa.Column('expires_at', sa.DateTime(), nullable=False),
+    sa.Column('type', sa.Enum('SIGNUP', 'FORGOT', name='tokentype'), nullable=False),
     sa.Column('id', sa.String(length=36), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),

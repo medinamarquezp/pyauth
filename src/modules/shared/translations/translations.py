@@ -20,8 +20,8 @@ def get_translations(lang):
     return translations.get(lang, default_translations)
 
 
-def get_email_contents(lang, email_type):
-    return get_translations(lang).get("emails").get(email_type, {
+def get_email_contents(lang, type: str):
+    return get_translations(lang).get("emails").get(type, {
         "subject": "",
         "content": ""
     })
