@@ -26,7 +26,7 @@ class VerificationTokenService:
             return token
         data = {
             "user_id": user_id,
-            "token": secrets.token_urlsafe(24),
+            "token": secrets.token_urlsafe(64),
             "expires_at": datetime.now() + timedelta(days=1),
             "type": type
         }

@@ -108,6 +108,20 @@ class AuthService:
             logger.error(f"Error sending forgot password token: {err}")
             return False
 
+    def reset_password(self, token: str, password: str) -> bool:
+        try:
+            logger.info(f"Resetting password for token: {token}")
+            with DatabaseManager().generate_session() as session:
+                verified_token = self.verification_token_service.verify_token(
+                    token, TokenType.FORGOT, session)
+                self.password_service.update(
+                    verified_token["user_id"], password, session)
+                logger.info(f"Password reset for user: {verified_token['user_id']}")
+                return True
+        except Exception as err:
+            logger.error(f"Error resetting password: {err}")
+            return False
+
     def _send_verification_token(
         self,
         user: UserModel,

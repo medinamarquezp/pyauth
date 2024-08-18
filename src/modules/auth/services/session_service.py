@@ -25,7 +25,7 @@ class SessionService:
             return existing_session
         data = {
             "user_id": user_id,
-            "token": secrets.token_urlsafe(32),
+            "token": secrets.token_urlsafe(64),
             "expires_at": datetime.now() + timedelta(days=1)
         }
         logger.info(f"Creating session for user {user_id}")

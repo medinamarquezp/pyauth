@@ -11,7 +11,7 @@ class PasswordService:
         self.password_repository = password_repository
 
     def get_password(self, user_id: str) -> PasswordModel:
-        return self.password_repository.get_by_props({ "user_id": user_id })
+        return self.password_repository.get_by_props({"user_id": user_id})
 
     def create(self, user_id: str, password: str, session: Optional[Session] = None):
         try:
@@ -35,7 +35,7 @@ class PasswordService:
             logger.error(f"Error creating password for user {user_id}: {e}")
             raise e
 
-    def update(self, user_id: str, new_password: str):
+    def update(self, user_id: str, new_password: str, session: Optional[Session] = None):
         try:
             logger.info(f"Updating password for user {user_id}")
             password = self.get_password(user_id)
@@ -50,7 +50,7 @@ class PasswordService:
             data = {
                 "hash": hash,
             }
-            return self.password_repository.update(user_id, data)
+            return self.password_repository.set_session(session).update_by_props({"user_id": user_id}, data)
         except Exception as e:
             logger.error(f"Error updating password for user {user_id}: {e}")
             raise e
@@ -62,4 +62,7 @@ class PasswordService:
             logger.error(f"Password not found for user {user_id}")
             return False
         logger.info(f"Password found for user {user_id}")
-        return bcrypt.checkpw(password_str.encode(), password.hash.encode())
+        verified = bcrypt.checkpw(
+            password_str.encode(), password.hash.encode())
+        logger.info(f"Password verified for user {user_id}: {verified}")
+        return verified
