@@ -11,6 +11,9 @@ from src.modules.auth.repositories import SessionRepository
 class SessionService:
     def __init__(self, repository: SessionRepository):
         self.repository = repository
+        
+    def get_by_token(self, token: str) -> SessionModel | None:
+        return self.repository.get_by_props({"token": token})
 
     def get_user_session(self, user_id: str) -> SessionModel | None:
         session = self.repository.get_by_props({"user_id": user_id })

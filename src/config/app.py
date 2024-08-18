@@ -1,7 +1,12 @@
 from os import getenv
 from dotenv import load_dotenv
 
-load_dotenv()
+ENV = getenv("ENV")
+
+if ENV == "test":
+    load_dotenv(".env.test", override=True)
+else:
+    load_dotenv(".env", override=True)
 
 DATABASE_URL = getenv("DATABASE_URL") or "sqlite:///app.db"
 

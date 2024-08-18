@@ -6,6 +6,7 @@ Thumbs.db
 venv/
 env/
 *.env
+.env.*
 
 # Python cache files
 __pycache__/
@@ -62,6 +63,7 @@ temp/
 coverage/
 .coverage
 htmlcov/
+.pytest_cache/
 
 # Generated documentation files
 docs/_build/

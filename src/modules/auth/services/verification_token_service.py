@@ -48,6 +48,7 @@ class VerificationTokenService:
                          token_str} is not of type {type.value}")
             return response
         self.repository.set_session(session).update(str(token.id), {
+            "expires_at": datetime.now(),
             "verified_at": datetime.now()
         })
         logger.info(f"Verification token {token_str} has been verified")
