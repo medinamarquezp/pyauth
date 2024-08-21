@@ -21,3 +21,11 @@ EMAIL_SMTP = {
     "PASSWORD": getenv("EMAIL_SMTP_PASSWORD"),
     "FROM": getenv("EMAIL_SMTP_FROM"),
 }
+
+OAUTH = {
+    "GOOGLE": {
+        "CLIENT_ID": getenv("OAUTH_GOOGLE_CLIENT_ID"),
+        "CLIENT_SECRET": getenv("OAUTH_GOOGLE_CLIENT_SECRET"),
+        "REDIRECT_URI": getenv("OAUTH_GOOGLE_REDIRECT_URI"),
+    }
+}

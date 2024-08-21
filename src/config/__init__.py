@@ -1,1 +1,1 @@
-from .app import DATABASE_URL, EMAIL_SMTP, APP
+from .app import DATABASE_URL, EMAIL_SMTP, APP, OAUTH
