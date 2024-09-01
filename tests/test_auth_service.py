@@ -9,8 +9,10 @@ from src.modules.shared.di import (
     email_service,
     session_service,
     verification_token_service,
+    oauth_service
 )
 from src.modules.auth.models import TokenType
+
 
 def _prepare_user_data():
     fake = Faker()
@@ -21,6 +23,7 @@ def _prepare_user_data():
         "password": fake.password(length=10, special_chars=True, digits=True, upper_case=True, lower_case=True),
     }
     return data
+
 
 @pytest.fixture(scope="function", autouse=True)
 def mock_send_email():
@@ -77,6 +80,7 @@ def test_auth_verify_signup():
     assert verified_token is not None
     assert verified_token.is_verified == True
 
+
 def test_auth_signin_with_invalid_email():
     data = _prepare_user_data()
     data["email"] = "invalidemail"
@@ -127,7 +131,8 @@ def test_auth_signout():
     session = session_service.get_by_token(session_token)
     assert session is not None
     assert session.is_expired == True
-    
+
+
 def test_auth_forgot_password(mock_send_email):
     data = _prepare_user_data()
     auth_service.signup(data.copy())
@@ -146,7 +151,8 @@ def test_auth_forgot_password(mock_send_email):
     assert forgot_token.is_signup == False
     assert forgot_token.is_forgot == True
     mock_send_email.assert_called_once()
-    
+
+
 def test_auth_reset_password():
     data = _prepare_user_data()
     auth_service.signup(data.copy())
@@ -157,7 +163,8 @@ def test_auth_reset_password():
     auth_service.forgot_password(data["email"])
     forgot_token = verification_token_service.get_by_user_id(
         str(created_user.id), TokenType.FORGOT)
-    result = auth_service.reset_password(str(forgot_token.token), "newpassword")
+    result = auth_service.reset_password(
+        str(forgot_token.token), "newpassword")
     assert result is True
     verified_token = verification_token_service.get_by_user_id(
         str(created_user.id), TokenType.FORGOT)
@@ -174,4 +181,17 @@ def test_auth_reset_password():
     assert new_password_signin_result["session"]["expires_at"] is not None
     assert datetime.strptime(
         new_password_signin_result["session"]["expires_at"], "%Y-%m-%d %H:%M:%S") > datetime.now()
-    
+
+
+def test_auth_oauth_callback():
+    with patch.object(oauth_service, 'process_callback') as mock:
+        data = _prepare_user_data()
+        data.pop("password")
+        mock.return_value = data
+        result = auth_service.oauth_callback('google', 'test')
+        assert result is not False
+        assert result["user"] is not None
+        assert result["user"]["id"] is not None
+        assert result["user"]["email"] == data["email"]
+        assert result["user"]["name"] == data["name"]
+        assert result["user"]["status"] == "ACTIVE"

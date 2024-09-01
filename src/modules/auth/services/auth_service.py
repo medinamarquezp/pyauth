@@ -3,14 +3,14 @@ from sqlalchemy.orm import Session
 
 from src.config.app import APP
 from .password_service import PasswordService
+from ..schemas import signup_schema, signin_schema
 from src.modules.user.models import UserModel
-from src.modules.shared.services import logger
 from src.modules.user.services import UserService
 from src.modules.shared.sql import DatabaseManager
-from ..schemas import signup_schema, signin_schema
-from src.modules.shared.services import EmailService
-from src.modules.auth.models import SessionModel, TokenType
+from src.modules.shared.services import EmailService, logger
 from src.modules.shared.translations import get_email_contents
+from src.modules.auth.models import SessionModel, TokenType
+from src.modules.auth.services.oauth_service import OAuthService
 from src.modules.auth.services.session_service import SessionService
 from src.modules.auth.services.verification_token_service import VerificationTokenService
 
@@ -20,12 +20,14 @@ class AuthService:
         self,
         user_service: UserService,
         email_service: EmailService,
+        oauth_service: OAuthService,
         session_service: SessionService,
         password_service: PasswordService,
         verification_token_service: VerificationTokenService,
     ):
         self.user_service = user_service
         self.email_service = email_service
+        self.oauth_service = oauth_service
         self.session_service = session_service
         self.password_service = password_service
         self.verification_token_service = verification_token_service
@@ -116,10 +118,31 @@ class AuthService:
                     token, TokenType.FORGOT, session)
                 self.password_service.update(
                     verified_token["user_id"], password, session)
-                logger.info(f"Password reset for user: {verified_token['user_id']}")
+                logger.info(f"Password reset for user: {
+                            verified_token['user_id']}")
                 return True
         except Exception as err:
             logger.error(f"Error resetting password: {err}")
+            return False
+
+    def oauth_redirect(self, provider: str):
+        return self.oauth_service.get_redirect_url(provider)
+
+    def oauth_callback(self, provider: str, callback: str):
+        try:
+            data = self.oauth_service.process_callback(provider, callback)
+            logger.info(f"OAuth callback data: {data}")
+            with DatabaseManager().generate_session() as session:
+                user = self.user_service.process_oauth_user(data, session)
+                if not user:
+                    raise ValueError("User not found")
+                logger.info(f"OAuth user processed: {user.id}")
+                auth_session = self.session_service.create(
+                    str(user.id), session)
+                logger.info(f"Session created: {auth_session.id}")
+                return self._prepare_signin_response(user, auth_session)
+        except Exception as err:
+            logger.error(f"Error on oauth callback: {err}")
             return False
 
     def _send_verification_token(
