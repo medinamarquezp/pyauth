@@ -4,11 +4,13 @@ from sqlalchemy.orm import Session
 from src.modules.shared.services import logger
 from src.modules.auth.models import PasswordModel
 from src.modules.auth.repositories import PasswordRepository
+from src.modules.user.services import UserService
 
 
 class PasswordService:
-    def __init__(self, password_repository: PasswordRepository):
+    def __init__(self, password_repository: PasswordRepository, user_service: UserService):
         self.password_repository = password_repository
+        self.user_service = user_service
 
     def get_password(self, user_id: str) -> PasswordModel:
         return self.password_repository.get_by_props({"user_id": user_id})
@@ -40,7 +42,14 @@ class PasswordService:
             logger.info(f"Updating password for user {user_id}")
             password = self.get_password(user_id)
             if not password:
-                raise Exception("Password not found")
+                logger.info(f"Password not found for user {user_id}")
+                user = self.user_service.get_by_id(user_id)
+                logger.info(f"User found by id {
+                            user_id} with status {user.status}")
+                if not user or not user.is_active:
+                    raise Exception("User not found or not active")
+                logger.info(f"Creating password for user {user_id}")
+                return self.create(user_id, new_password, session)
             salt = password.salt.encode()
             logger.info("Salt encoded")
             hash = bcrypt.hashpw(

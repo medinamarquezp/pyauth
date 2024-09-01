@@ -32,6 +32,19 @@ def mock_send_email():
         yield mock
 
 
+def _process_oauth_callback(mock_send_email):
+    with patch.object(oauth_service, 'process_callback') as mock:
+        data = _prepare_user_data()
+        data.pop("password")
+        mock.return_value = data
+        mock_send_email.return_value = True
+        callback_result = auth_service.oauth_callback('google', 'test')
+        assert callback_result is not False
+        assert callback_result["user"] is not None
+        user = callback_result["user"]
+    return data, user
+
+
 def test_auth_signup_with_invalid_password():
     data = _prepare_user_data()
     data["password"] = "invalidpassword"
@@ -184,14 +197,40 @@ def test_auth_reset_password():
 
 
 def test_auth_oauth_callback():
-    with patch.object(oauth_service, 'process_callback') as mock:
-        data = _prepare_user_data()
-        data.pop("password")
-        mock.return_value = data
-        result = auth_service.oauth_callback('google', 'test')
-        assert result is not False
-        assert result["user"] is not None
-        assert result["user"]["id"] is not None
-        assert result["user"]["email"] == data["email"]
-        assert result["user"]["name"] == data["name"]
-        assert result["user"]["status"] == "ACTIVE"
+    data, user = _process_oauth_callback(mock_send_email)
+    assert user["id"] is not None
+    assert user["email"] == data["email"]
+    assert user["name"] == data["name"]
+    assert user["status"] == "ACTIVE"
+
+
+def test_auth_oauth_forgot_password():
+    _, user = _process_oauth_callback(mock_send_email)
+    result = auth_service.forgot_password(user["email"])
+    assert result is True
+    forgot_token = verification_token_service.get_by_user_id(
+        str(user["id"]), TokenType.FORGOT)
+    assert forgot_token is not None
+    assert forgot_token.is_expired is False
+    assert forgot_token.is_verified is False
+    assert forgot_token.is_signup is False
+    assert forgot_token.is_forgot is True
+
+
+def test_auth_oauth_reset_password():
+    data, user = _process_oauth_callback(mock_send_email)
+    forgot_result = auth_service.forgot_password(user["email"])
+    assert forgot_result is True
+    forgot_token = verification_token_service.get_by_user_id(
+        str(user["id"]), TokenType.FORGOT).token
+    reset_result = auth_service.reset_password(
+        str(forgot_token), "newpassword")
+    assert reset_result is True
+    data["password"] = "newpassword"
+    new_password_signin_result = auth_service.signin(data)
+    assert new_password_signin_result is not False
+    assert new_password_signin_result["session"] is not None
+    assert new_password_signin_result["session"]["token"] is not None
+    assert new_password_signin_result["session"]["expires_at"] is not None
+    assert datetime.strptime(
+        new_password_signin_result["session"]["expires_at"], "%Y-%m-%d %H:%M:%S") > datetime.now()
