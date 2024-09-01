@@ -2,50 +2,44 @@ from requests_oauthlib import OAuth2Session
 
 from src.config import OAUTH
 from src.modules.shared.services import logger
-from src.modules.user.services import UserService
-from src.modules.auth.services.session_service import SessionService
 
-class OAuthService: 
-    def __init__(
-        self,
-        user_service: UserService,
-        session_service: SessionService
-    ):
-        self.session_service = session_service
-    
-    def get_google_oauth_redirect_url(self):
-        data = self._prepare_google_oauth_data()
-        logger.info(f"Getting Google OAuth redirect URL for client_id: {data['client_id']}")
-        google = OAuth2Session(
-            client_id=data["client_id"],
-            redirect_uri=data["redirect_uri"],
-            scope=data["scope"]
-        )
-        authorization_url, state = google.authorization_url(data["authorization_url"], access_type="offline", prompt="consent")
-        logger.info(f"Authorization URL: {authorization_url}")
-        logger.info(f"State: {state}")
+
+class OAuthService:
+    def get_redirect_url(self, provider: str):
+        if provider == "google":
+            return self._get_google_oauth_redirect_url()
+        else:
+            raise ValueError(f"Provider {provider} not supported")
+
+    def process_callback(self, provider: str, callback: str):
+        if provider == "google":
+            return self._process_google_oauth_callback(callback)
+        else:
+            raise ValueError(f"Provider {provider} not supported")
+
+    def _get_google_oauth_redirect_url(self):
+        google = self._get_google_oauth_session()
+        authorization_url, _ = google.authorization_url(
+            OAUTH["GOOGLE"]["AUTHORIZATION_URL"], access_type="offline", prompt="select_account")
         return authorization_url
 
-    def process_google_oauth_callback(self, response):
+    def _process_google_oauth_callback(self, callback: str):
         logger.info(f"Processing Google OAuth callback")
-        data = self._prepare_google_oauth_data()
-        google = OAuth2Session(
-            client_id=data["client_id"],
-            redirect_uri=data["redirect_uri"]
-        )
-        token = google.fetch_token(data["token_url"], client_secret=data["client_secret"], authorization_response=response)
-        logger.info(f"Token: {token}")
-        user_info = google.get(data["user_info_url"]).json()
-        logger.info(f"User info: {user_info}")
-        return user_info
-    
-    def _prepare_google_oauth_data(self):
-        return {
-            "client_id": OAUTH["GOOGLE"]["CLIENT_ID"],
-            "client_secret": OAUTH["GOOGLE"]["CLIENT_SECRET"],
-            "redirect_uri": OAUTH["GOOGLE"]["REDIRECT_URI"],
-            "scope": ['https://www.googleapis.com/auth/gmail.readonly'],
-            "authorization_url": "https://accounts.google.com/o/oauth2/auth",
-            "token_url": "https://accounts.google.com/o/oauth2/token",
-            "user_info_url": "https://www.googleapis.com/oauth2/v3/userinfo"
+        google = self._get_google_oauth_session()
+        google.fetch_token(
+            OAUTH["GOOGLE"]["TOKEN_URL"], client_secret=OAUTH["GOOGLE"]["CLIENT_SECRET"], authorization_response=callback)
+        google_user_data = google.get(OAUTH["GOOGLE"]["USER_INFO_URL"]).json()
+        user_data = {
+            "email": google_user_data["email"],
+            "name": google_user_data["given_name"],
+            "last_name": google_user_data["family_name"],
         }
+        logger.info(f"User info: {user_data}")
+        return user_data
+
+    def _get_google_oauth_session(self):
+        return OAuth2Session(
+            client_id=OAUTH["GOOGLE"]["CLIENT_ID"],
+            redirect_uri=OAUTH["GOOGLE"]["REDIRECT_URI"],
+            scope=OAUTH["GOOGLE"]["SCOPE"]
+        )

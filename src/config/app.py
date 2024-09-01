@@ -27,5 +27,13 @@ OAUTH = {
         "CLIENT_ID": getenv("OAUTH_GOOGLE_CLIENT_ID"),
         "CLIENT_SECRET": getenv("OAUTH_GOOGLE_CLIENT_SECRET"),
         "REDIRECT_URI": getenv("OAUTH_GOOGLE_REDIRECT_URI"),
+        "TOKEN_URL": "https://accounts.google.com/o/oauth2/token",
+        "USER_INFO_URL": "https://www.googleapis.com/oauth2/v3/userinfo",
+        "AUTHORIZATION_URL": "https://accounts.google.com/o/oauth2/auth",
+        "SCOPE": [
+            'https://www.googleapis.com/auth/userinfo.email',
+            'https://www.googleapis.com/auth/userinfo.profile',
+            'openid'
+        ],
     }
 }
