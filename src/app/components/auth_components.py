@@ -21,6 +21,10 @@ def create_input(label, is_password=False, validation=None):
     return ui.input(label, password=is_password, password_toggle_button=is_password, validation=validation).props('filled').classes('w-full mb-2')
 
 
+def card_container():
+    return ui.card().classes('w-full max-w-lg mx-auto mt-10 p-12')
+
+
 def card_title(title):
     return ui.label(title).classes('text-3xl font-bold text-center -mb-2')
 
