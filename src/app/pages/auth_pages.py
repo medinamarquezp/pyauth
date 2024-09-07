@@ -21,6 +21,8 @@ from src.app.components import (
 from src.app.handlers import (
     handle_signin,
     handle_signup,
+    handle_status,
+    handle_activate,
     handle_forgot_password,
     handle_reset_password,
     handle_oauth_callback
@@ -33,8 +35,9 @@ def setup_auth_pages():
         ui.open('/auth/signin')
 
     @ui.page('/auth/signin')
-    def login():
+    def login(request: Request):
         common_styles()
+        handle_status(request)
         with card_container():
             card_title('Welcome back')
             card_navigation("Don't have an account?",
@@ -83,6 +86,7 @@ def setup_auth_pages():
     def reset_password(token: Optional[str] = None):
         if not token:
             ui.open('/auth/forgot-password')
+            return
         common_styles()
         with card_container():
             card_title('Reset password')
@@ -98,3 +102,10 @@ def setup_auth_pages():
     def callback(request: Request):
         url = request.url
         handle_oauth_callback('google', str(url))
+
+    @ui.page('/auth/activate')
+    def activate(token: Optional[str] = None):
+        if not token:
+            ui.open('/auth/signin')
+            return
+        handle_activate(str(token))

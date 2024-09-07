@@ -1,5 +1,15 @@
 from nicegui import ui
+from fastapi import Request
 from src.modules.shared.di import auth_service
+
+
+def handle_status(request: Request):
+    if request.query_params.get('pending') == 'true':
+        ui.notify('Your account is pending activation', color='positive')
+    if request.query_params.get('activated') == 'true':
+        ui.notify('Your account has been activated', color='positive')
+    if request.query_params.get('activated') == 'false':
+        ui.notify('Something went wrong', color='negative')
 
 
 def handle_signin(email: str, password: str):
@@ -21,7 +31,14 @@ def handle_signup(name: str, email: str, password: str):
     if not registered:
         ui.notify('Something went wrong', color='negative')
         return
-    ui.open('/auth/signin')
+    ui.open('/auth/signin?pending=true')
+
+
+def handle_activate(token: str):
+    if not token:
+        ui.open('/auth/signin')
+    activated = auth_service.verify_signup(token)
+    ui.open(f'/auth/signin?activated={str(activated).lower()}')
 
 
 def handle_forgot_password(email: str):
