@@ -65,7 +65,8 @@ def handle_reset_password(token: str, password: str):
 
 def handle_oauth_callback(provider: str, url: str):
     data = auth_service.oauth_callback('google', str(url))
-    ui.label(str(data))
+    app.storage.user['auth'] = data
+    ui.open('/admin')
 
 
 def handle_signout():
