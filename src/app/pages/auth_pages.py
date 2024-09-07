@@ -53,6 +53,10 @@ def setup_auth_pages():
                                  'Invalid email': lambda value: validate_email(value)})
             password = create_input('Password', is_password=True, validation={
                                     'Invalid password': lambda value: validate_min_length(value)})
+            email.on('keydown.enter', lambda: handle_signin(
+                email.value, password.value))
+            password.on('keydown.enter', lambda: handle_signin(
+                email.value, password.value))
             card_navigation("Forgot your password?",
                             "Password recovery", '/auth/forgot-password')
             card_button('Sign in', lambda: handle_signin(
@@ -73,6 +77,12 @@ def setup_auth_pages():
                                  'Invalid email': lambda value: validate_email(value)})
             password = create_input('Password', is_password=True, validation={
                                     'Invalid password': lambda value: validate_min_length(value) and validate_password(value)})
+            name.on('keydown.enter', lambda: handle_signup(
+                name.value, email.value, password.value))
+            email.on('keydown.enter', lambda: handle_signup(
+                name.value, email.value, password.value))
+            password.on('keydown.enter', lambda: handle_signup(
+                name.value, email.value, password.value))
             card_button('Sign up', lambda: handle_signup(
                 name.value, email.value, password.value))
 
