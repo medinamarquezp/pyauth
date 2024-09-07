@@ -111,8 +111,12 @@ def setup_auth_pages():
             ui.label('Enter your new password')
             password = create_input('Password', is_password=True, validation={
                                     'Invalid password': lambda value: validate_min_length(value) and validate_password(value)})
-            create_input('Confirm password', is_password=True, validation={
+            confirm_password = create_input('Confirm password', is_password=True, validation={
                 'Invalid password': lambda value: validate_min_length(value) and validate_password(value), 'Passwords do not match': lambda value: value == password.value})
+            password.on('keydown.enter', lambda: handle_reset_password(
+                str(token), password.value))
+            confirm_password.on('keydown.enter', lambda: handle_reset_password(
+                str(token), password.value))
             card_button('Reset password', lambda: handle_reset_password(
                 str(token), password.value))
 

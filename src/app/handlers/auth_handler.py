@@ -10,6 +10,8 @@ def handle_status(request: Request):
         ui.notify('Your account has been activated', color='positive')
     if request.query_params.get('activated') == 'false':
         ui.notify('Something went wrong', color='negative')
+    if request.query_params.get('reset') == 'true':
+        ui.notify('Your password has been reset', color='positive')
 
 
 def handle_signin(email: str, password: str):
@@ -63,9 +65,14 @@ def handle_forgot_password(email: str):
 
 
 def handle_reset_password(token: str, password: str):
-    if token and password:
-        ui.notify('Resetting password...', color='positive')
-        # Aquí iría la lógica de autenticación
+    if not token or not password:
+        ui.notify('Something went wrong', color='negative')
+        return
+    reset_password = auth_service.reset_password(token, password)
+    if not reset_password:
+        ui.notify('Something went wrong', color='negative')
+        return
+    ui.open('/auth/signin?reset=true')
 
 
 def handle_oauth_callback(provider: str, url: str):
