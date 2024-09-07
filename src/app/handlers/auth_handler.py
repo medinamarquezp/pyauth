@@ -9,9 +9,19 @@ def handle_signin(email: str, password: str):
 
 
 def handle_signup(name: str, email: str, password: str):
-    if name and email and password:
-        ui.notify('Registrando...', color='positive')
-        # Aquí iría la lógica de autenticación
+    if not name or not email or not password:
+        ui.notify('Please fill in all fields', color='negative')
+        return
+    data = {
+        'name': name,
+        'email': email,
+        'password': password
+    }
+    registered = auth_service.signup(data)
+    if not registered:
+        ui.notify('Something went wrong', color='negative')
+        return
+    ui.open('/auth/signin')
 
 
 def handle_forgot_password(email: str):

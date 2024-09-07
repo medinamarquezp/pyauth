@@ -11,5 +11,5 @@ def validate_min_length(password):
 
 
 def validate_password(password):
-    pattern = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[#@$!%*?&^()_+\-=\\[\\]{}|;:,./~!])[A-Za-z\d#@$!%*?&^()_+\-=\\[\\]{}|;:,./~!]{8,}$'
+    pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
     return bool(re.match(pattern, password))
