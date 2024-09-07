@@ -2,6 +2,8 @@ from nicegui import ui
 from typing import Optional
 from fastapi import Request
 
+from src.app.decorators import redirect_if_authenticated
+
 from src.app.validations import (
     validate_email,
     validate_password,
@@ -31,11 +33,13 @@ from src.app.handlers import (
 
 def setup_auth_pages():
     @ui.page('/auth')
+    @redirect_if_authenticated
     def auth():
         ui.open('/auth/signin')
 
     @ui.page('/auth/signin')
-    def login(request: Request):
+    @redirect_if_authenticated
+    def signin(request: Request):
         common_styles()
         handle_status(request)
         with card_container():
@@ -54,6 +58,7 @@ def setup_auth_pages():
                 email.value, password.value))
 
     @ui.page('/auth/signup')
+    @redirect_if_authenticated
     def signup():
         common_styles()
         with card_container():
@@ -104,6 +109,7 @@ def setup_auth_pages():
         handle_oauth_callback('google', str(url))
 
     @ui.page('/auth/activate')
+    @redirect_if_authenticated
     def activate(token: Optional[str] = None):
         if not token:
             ui.open('/auth/signin')

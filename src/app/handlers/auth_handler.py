@@ -1,4 +1,4 @@
-from nicegui import ui
+from nicegui import ui, app
 from fastapi import Request
 from src.modules.shared.di import auth_service
 
@@ -13,9 +13,19 @@ def handle_status(request: Request):
 
 
 def handle_signin(email: str, password: str):
-    if email and password:
-        ui.notify('Iniciando sesión...', color='positive')
-        # Aquí iría la lógica de autenticación
+    if not email or not password:
+        ui.notify('Invalid email or password', color='negative')
+        return
+    data = {
+        'email': email,
+        'password': password
+    }
+    signed_in = auth_service.signin(data)
+    if not signed_in:
+        ui.notify('Invalid email or password', color='negative')
+        return
+    app.storage.user['auth'] = signed_in
+    ui.open('/admin')
 
 
 def handle_signup(name: str, email: str, password: str):
