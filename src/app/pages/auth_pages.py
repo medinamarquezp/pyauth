@@ -23,6 +23,7 @@ from src.app.components import (
 from src.app.handlers import (
     handle_signin,
     handle_signup,
+    handle_signout,
     handle_status,
     handle_activate,
     handle_forgot_password,
@@ -115,3 +116,7 @@ def setup_auth_pages():
             ui.open('/auth/signin')
             return
         handle_activate(str(token))
+
+    @ui.page('/auth/signout')
+    def signout():
+        handle_signout()

@@ -66,3 +66,12 @@ def handle_reset_password(token: str, password: str):
 def handle_oauth_callback(provider: str, url: str):
     data = auth_service.oauth_callback('google', str(url))
     ui.label(str(data))
+
+
+def handle_signout():
+    token = app.storage.user['auth']['session']['token']
+    if not token:
+        ui.open('/auth/signin')
+    auth_service.signout(token)
+    app.storage.user.clear()
+    ui.open('/auth/signin')
