@@ -52,9 +52,14 @@ def handle_activate(token: str):
 
 
 def handle_forgot_password(email: str):
-    if email:
-        ui.notify('Sending reset link...', color='positive')
-        # Aquí iría la lógica de autenticación
+    if not email:
+        ui.notify('Please enter your email', color='negative')
+        return
+    forgot_password = auth_service.forgot_password(email)
+    if not forgot_password:
+        ui.notify('Something went wrong', color='negative')
+        return
+    ui.notify('Reset link sent to your email', color='positive')
 
 
 def handle_reset_password(token: str, password: str):

@@ -95,6 +95,8 @@ def setup_auth_pages():
             ui.label('Enter your email to reset your password')
             email = create_input('Email', validation={
                                  'Invalid email': lambda value: validate_email(value)})
+            email.on('keydown.enter', lambda: handle_forgot_password(
+                email.value))
             card_button('Reset password', lambda: handle_forgot_password(
                 email.value))
 
